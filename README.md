@@ -3,7 +3,6 @@
 **Jaxrs Client** provides a factory to develop your own RESTful API client. RESTEasy is the default implementation to create resources proxies.
 
 ## Get it
-> Not yet available
 
 Add the following to your Maven configuration:
 
