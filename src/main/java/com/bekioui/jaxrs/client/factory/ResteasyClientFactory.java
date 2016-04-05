@@ -20,10 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.function.Function;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.client.ClientResponseFilter;
 import javax.ws.rs.client.ResponseProcessingException;
-import javax.ws.rs.core.Response;
 
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -33,14 +30,10 @@ import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
 
 import com.bekioui.jaxrs.client.JaxrsClientFactory;
+import com.bekioui.jaxrs.client.filter.AuthorizationFilter;
+import com.bekioui.jaxrs.client.filter.ErrorFilter;
 
 public final class ResteasyClientFactory implements JaxrsClientFactory {
-
-	private final ClientResponseFilter clientResponseFilter = (requestContext, responseContext) -> {
-		if (responseContext.getStatus() != Response.Status.OK.getStatusCode()) {
-			throw new WebApplicationException(responseContext.getStatusInfo().getReasonPhrase(), responseContext.getStatus());
-		}
-	};
 
 	private final Function<Object, InvocationHandler> handler = resteasyProxy -> (proxy, method, args) -> {
 		try {
@@ -58,7 +51,8 @@ public final class ResteasyClientFactory implements JaxrsClientFactory {
 	public ResteasyClientFactory(String uri) {
 		this.target = new ResteasyClientBuilder() //
 				.httpEngine(new ApacheHttpClient4Engine(HttpClientBuilder.create().setConnectionManager(new PoolingHttpClientConnectionManager()).build())) //
-				.register(clientResponseFilter) //
+				.register(AuthorizationFilter.class) //
+				.register(ErrorFilter.class) //
 				.build() //
 				.target(uri);
 	}
