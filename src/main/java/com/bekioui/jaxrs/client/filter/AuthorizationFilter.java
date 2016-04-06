@@ -29,7 +29,10 @@ public final class AuthorizationFilter implements ClientRequestFilter {
 
 	@Override
 	public void filter(ClientRequestContext requestContext) {
-		requestContext.getHeaders().putSingle(AUTHORIZATION, headers.getHeaderString(AUTHORIZATION));
+		String authorization = headers.getHeaderString(AUTHORIZATION);
+		if (authorization != null) {
+			requestContext.getHeaders().putSingle(AUTHORIZATION, authorization);
+		}
 	}
 
 }
