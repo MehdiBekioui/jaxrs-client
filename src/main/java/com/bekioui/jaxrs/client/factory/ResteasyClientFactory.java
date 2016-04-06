@@ -15,36 +15,20 @@
  */
 package com.bekioui.jaxrs.client.factory;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
-import java.util.function.Function;
-
-import javax.ws.rs.client.ResponseProcessingException;
 
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
-import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
 
 import com.bekioui.jaxrs.client.JaxrsClientFactory;
 import com.bekioui.jaxrs.client.filter.AuthorizationFilter;
 import com.bekioui.jaxrs.client.filter.ErrorFilter;
+import com.bekioui.jaxrs.client.handler.ProxyInvocationHandler;
 
 public final class ResteasyClientFactory implements JaxrsClientFactory {
-
-	private final Function<Object, InvocationHandler> handler = resteasyProxy -> (proxy, method, args) -> {
-		try {
-			return method.invoke(resteasyProxy, args);
-		} catch (InvocationTargetException e) {
-			if (e.getTargetException() instanceof ResponseProcessingException) {
-				ClientInvocation.handleErrorStatus(((ResponseProcessingException) e.getCause()).getResponse());
-			}
-			throw e.getTargetException();
-		}
-	};
 
 	private final ResteasyWebTarget target;
 
@@ -60,7 +44,7 @@ public final class ResteasyClientFactory implements JaxrsClientFactory {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T create(Class<T> clazz) {
-		return (T) Proxy.newProxyInstance(target.getClass().getClassLoader(), new Class[] { clazz }, handler.apply(target.proxy(clazz)));
+		return (T) Proxy.newProxyInstance(target.getClass().getClassLoader(), new Class[] { clazz }, new ProxyInvocationHandler(target.proxy(clazz)));
 	}
 
 }

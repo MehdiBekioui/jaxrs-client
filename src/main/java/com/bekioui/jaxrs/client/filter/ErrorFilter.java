@@ -19,15 +19,14 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.client.ClientResponseFilter;
-import javax.ws.rs.core.Response;
 
 public final class ErrorFilter implements ClientResponseFilter {
 
-    @Override
-    public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) {
-        if (responseContext.getStatus() != Response.Status.OK.getStatusCode()) {
-            throw new WebApplicationException(responseContext.getStatusInfo().getReasonPhrase(), responseContext.getStatus());
-        }
-    }
+	@Override
+	public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) {
+		if (responseContext.getStatus() >= 300) {
+			throw new WebApplicationException(responseContext.getStatus());
+		}
+	}
 
 }
